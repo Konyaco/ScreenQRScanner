@@ -7,14 +7,16 @@ import com.google.zxing.client.j2se.BufferedImageLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
 import java.awt.*
+import java.awt.image.BufferedImage
 import javax.imageio.ImageIO
 import javax.swing.*
 import kotlin.system.exitProcess
 
+private val iconImg: BufferedImage = ImageIO.read(ClassLoader.getSystemResources("outline_qr_code_scanner_white_24dp.png").nextElement())
+
 fun main() {
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
     val tray = SystemTray.getSystemTray()
-    val iconImg = ImageIO.read(ClassLoader.getSystemResources("outline_qr_code_scanner_white_24dp.png").nextElement())
     val popupMenu = PopupMenu("Scanner").apply {
         add(MenuItem("Scan").apply {
             addActionListener { scanAndShow() }
@@ -35,16 +37,16 @@ fun main() {
     )
 }
 
-fun scanAndShow() {
+private fun scanAndShow() {
     val frame = JFrame().apply {
-        defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+        iconImage = iconImg
+        defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
         layout = FlowLayout()
     }
     val result = try {
         scan()
     } catch (e: Exception) {
         frame.apply {
-            layout = FlowLayout()
             title = "Error"
             add(JLabel(e.message))
             add(JButton("Confirm").apply { addActionListener { dispose() } })
@@ -75,7 +77,7 @@ fun scanAndShow() {
     }
 }
 
-fun scan(): Result? {
+private fun scan(): Result? {
     val screenshot =
         Robot().createScreenCapture(Toolkit.getDefaultToolkit().screenSize.let { Rectangle(it.width, it.height) })
     val img = BinaryBitmap(HybridBinarizer(BufferedImageLuminanceSource(screenshot)))
